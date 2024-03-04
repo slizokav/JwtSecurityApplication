@@ -1,6 +1,6 @@
 package com.slizokav.JwtAuthorizationApplication.configuration;
 
-import com.slizokav.JwtAuthorizationApplication.services.PersonService;
+import com.slizokav.JwtAuthorizationApplication.security.PersonDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,18 +16,18 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SpringConfiguration {
 
 
-    private PersonService personService;
+    private PersonDetailsService personDetailsService;
 
     @Autowired
-    public SpringConfiguration(PersonService personService) {
-        this.personService = personService;
+    public SpringConfiguration(PersonDetailsService personDetailsService) {
+        this.personDetailsService = personDetailsService;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests((request) -> request
-                        .requestMatchers("/", "/login").permitAll()
+                        .requestMatchers("/", "/login", "/registration").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin((login) -> login
@@ -39,13 +39,12 @@ public class SpringConfiguration {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder builder) throws Exception {
-        builder.userDetailsService(personService)
-                .passwordEncoder(passwordEncoder());
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(personDetailsService).passwordEncoder(passwordEncoder());
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public static PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
 
